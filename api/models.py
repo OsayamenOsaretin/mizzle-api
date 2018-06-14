@@ -10,6 +10,9 @@ class Event(models.Model):
     poster = models.CharField(max_length=500, blank=True, default='')
     description = models.TextField(max_length=3000, blank=True, default='')
     location = models.CharField(max_length=300, blank=True, default='')
+    creator = models.ForeignKey('User',
+                                related_name="creator",
+                                on_delete=models.CASCADE)
 
     class Meta:
         ordering = ('created',)

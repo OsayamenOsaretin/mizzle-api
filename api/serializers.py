@@ -3,9 +3,16 @@ from api.models import Artiste, Event, User
 
 
 class EventSerializer(serializers.ModelSerializer):
+    # TODO: should serialize creator field
+
     class Meta:
         model = Event
-        fields = ('created', 'title', 'poster', 'description', 'location')
+        fields = ('created',
+                  'title',
+                  'poster',
+                  'description',
+                  'location',
+                  'creator')
 
 
 class UserSerializer(serializers.ModelSerializer):
