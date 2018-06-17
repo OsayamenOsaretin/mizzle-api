@@ -1,6 +1,6 @@
-import jwt
-
 from datetime import datetime, timedelta
+
+import jwt
 
 from django.conf import settings
 from django.db import models
@@ -46,23 +46,6 @@ class AccountManager(BaseUserManager):
         return user
 
 
-class Event(models.Model):
-    """
-    Model for events created by users, artistes
-    """
-    created = models.DateTimeField(auto_now_add=True)
-    title = models.CharField(max_length=100, blank=True, default='')
-    poster = models.CharField(max_length=500, blank=True, default='')
-    description = models.TextField(max_length=3000, blank=True, default='')
-    location = models.CharField(max_length=300, blank=True, default='')
-    creator = models.ForeignKey('User',
-                                related_name="creator",
-                                on_delete=models.CASCADE)
-
-    class Meta:
-        ordering = ('created',)
-
-
 class User(AbstractBaseUser, PermissionsMixin):
 
     """
@@ -104,21 +87,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         return token.decode('utf-8')
 
 
-class Artiste(models.Model):
-
+class Event(models.Model):
     """
-    Artistes are tied to Users, but have extra information
-    peculiar to Artistes
+    Model for events created by users, artistes
     """
+    created = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=100, blank=True, default='')
+    poster = models.CharField(max_length=500, blank=True, default='')
+    description = models.TextField(max_length=3000, blank=True, default='')
+    location = models.CharField(max_length=300, blank=True, default='')
+    creator = models.ForeignKey('User',
+                                related_name="creator",
+                                on_delete=models.CASCADE)
 
-    bio = models.TextField(max_length=3000, blank=True, default='')
-    record_label = models.CharField(max_length=100, blank=True, default='')
-    events = models.ManyToManyField(
-        'Event',
-        related_name='performer'
-    )
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name='user'
-    )
+    class Meta:
+        ordering = ('created',)
