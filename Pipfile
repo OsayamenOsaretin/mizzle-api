@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 djangorestframework = "*"
 Django = "*"
+djangorestframework-jwt = "*"
+pyjwt = "*"
+django-extensions = "*"
 
 [dev-packages]
 

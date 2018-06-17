@@ -1,49 +1,34 @@
-from django.shortcuts import render
-
-from api.models import User, Event, Artiste
-from api.serializers import EventSerializer, ArtisteSerializer, UserSerializer
+from api.serializers import (LoginSerializer,
+                             RegistrationSerializer)
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+
 
 # Create your views here.
 
+class RegistrationView(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = RegistrationSerializer
 
-class EventList(generics.ListCreateAPIView):
-    """
-    List all the events
-    """
-    # TODO: Paginate events
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
+    def post(self, request):
+        user = request.data
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class ArtisteList(APIView):
-    """
-    List all the registered artistes
-    """
-    def get(self, request, format=None):
-        artistes = Artiste.object.all()
-        serializer = ArtisteSerializer(artistes, many=True)
-        return Response(serializer.data)
+class LoginView(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = LoginSerializer
 
+    def post(self, request):
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
 
-class UserList(generics.ListCreateAPIView):
-    """
-    List all the users
-    """
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+        return Response(serializer.data, status=status.HTTP_200_OK)
