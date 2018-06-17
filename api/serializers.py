@@ -1,32 +1,52 @@
 from rest_framework import serializers
-from api.models import Artiste, Event, User
+from api.models import User
+
+from django.contrib.auth import authenticate
 
 
-class EventSerializer(serializers.ModelSerializer):
-    # TODO: should serialize creator field
+class RegistrationSerializer(serializers.ModelSerializer):
+    """Serializes registration and creates a new user"""
 
-    class Meta:
-        model = Event
-        fields = ('created',
-                  'title',
-                  'poster',
-                  'description',
-                  'location',
-                  'creator')
+    password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+        write_only=True
+    )
 
-
-class UserSerializer(serializers.ModelSerializer):
-    events = EventSerializer(read_only=True, many=True)
+    token = serializers.CharField(max_length=255, read_only=True)
 
     class Meta:
         model = User
-        fields = ('alias', 'email', 'location', 'events')
+        fields = ['email', 'username', 'password', 'token']
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
 
-class ArtisteSerializer(serializers.ModelSerializer):
-    events = EventSerializer(read_only=True, many=True)
-    user = UserSerializer(read_only=True)
+class LoginSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=255)
+    username = serializers.CharField(max_length=255, read_only=True)
+    password = serializers.CharField(max_length=128, write_only=True)
+    token = serializers.CharField(max_length=255, read_only=True)
 
-    class Meta:
-        model = Artiste
-        fields = ('bio', 'record_label', 'user', 'events')
+    def validate(self, data):
+        email = data.get('email', None)
+        password = data.get('password', None)
+
+        if email is None:
+            raise serializers.ValidationError('Invalid email address')
+
+        if password is None:
+            raise serializers.ValidationError('Invalid password')
+
+        user = authenticate(username=email, password=password)
+        if user is None:
+            raise serializers.ValidationError(
+                'A user with this email and password was not found.'
+            )
+
+        return {
+            'email': user.email,
+            'username': user.username,
+            'token': user.token
+            }
