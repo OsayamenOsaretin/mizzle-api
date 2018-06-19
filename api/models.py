@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+import datetime
+from datetime import timedelta
 
 import jwt
 
@@ -75,7 +76,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self._generate_jwt_token()
 
     def _generate_jwt_token(self):
-        expiry_date = datetime.now() + timedelta(days=3)
+        expiry_date = datetime.datetime.now() + timedelta(days=3)
 
         token = jwt.encode({
             'id': self.pk,
@@ -99,6 +100,9 @@ class Event(models.Model):
     creator = models.ForeignKey('User',
                                 related_name="creator",
                                 on_delete=models.CASCADE)
+    date = models.DateField(default=datetime.date.today)
+    ticket_purchase = models.CharField(max_length=255, blank=True, default='')
+    artistes = models.ManyToManyField(User)
 
     class Meta:
         ordering = ('created',)

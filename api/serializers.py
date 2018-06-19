@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from api.models import User
+from rest_framework.validators import UniqueTogetherValidator
+from api.models import User, Event
 
 from django.contrib.auth import authenticate
 
@@ -50,3 +51,41 @@ class LoginSerializer(serializers.Serializer):
             'username': user.username,
             'token': user.token
             }
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+
+
+class EventSerializer(serializers.ModelSerializer):
+    artistes = UserSerializer(many=True, read_only=True)
+    creator = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Event
+        fields = ['created',
+                  'title',
+                  'poster',
+                  'description',
+                  'location',
+                  'date',
+                  'ticket_purchase',
+                  'artistes',
+                  'creator']
+
+        validators = [
+                UniqueTogetherValidator(
+                    queryset=Event.objects.all(),
+                    fields=('title', 'description', 'date')
+                )
+        ]
+
+        def create(self, validated_data):
+            artistes_data = validated_data.pop('artistes')
+            event = Event.objects.create(**validated_data)
+            for artiste in artistes_data:
+                user = User.objects.get_or_create(username=artiste)
+                event.artistes.add(user)
+            return event
