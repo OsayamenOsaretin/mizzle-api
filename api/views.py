@@ -6,6 +6,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
+from rest_framework.settings import api_settings
+
+from .models import Event
 
 
 # Create your views here.
@@ -46,3 +49,14 @@ class EventView(APIView):
         serializer.save(creator=request.user)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+
+        pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+        paginator = pagination_class()
+        queryset = Event.objects.all()
+
+        page = paginator.paginate_queryset(queryset, request)
+
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
